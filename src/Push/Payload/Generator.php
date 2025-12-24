@@ -37,7 +37,13 @@ class Generator
 
     public function __invoke(AbstractModel $subject, User $recipient = null, array $includes = null): ?array
     {
-        if ($subject instanceof Post) $subject = $subject->discussion;
+
+        $post = null;
+
+        if ($subject instanceof Post) {
+            $post = $subject;
+            $subject = $subject->discussion;
+        }
 
         $this->disableTracking();
 
@@ -55,9 +61,25 @@ class Generator
             ->get("/$endpoint/$subject->id");
 
         $contents = (string) $response->getBody();
+        $decodedContents = json_decode($contents, true);
+
+        if ($post) {
+
+            $postResponse = $this->client
+                ->withActor($recipient ?? new Guest)
+                ->withQueryParams([
+                    'include' => 'user,editedUser,likes'
+                ])
+                ->get('/posts/' . $post->id);
+
+            $postContents = (string) $postResponse->getBody();
+            $decodedPostContents = json_decode($postContents, true);
+            $decodedContents['data']['extPost'] = $decodedPostContents;
+
+        }
 
         if ($response->getStatusCode() === 200 && ! empty($contents)) {
-            return json_decode($contents, true);
+            return $decodedContents;
         }
 
         return null;
