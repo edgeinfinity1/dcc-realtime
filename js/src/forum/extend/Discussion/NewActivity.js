@@ -24,9 +24,6 @@ export default function () {
   };
   DiscussionPage.prototype.websocketEventStreamUpdate = function (data) {
     const discussion = app.store.pushPayload(data);
-    if (data.data.extPost) {
-      app.store.pushPayload(data.data.extPost);
-    }
 
     if (discussion.id() === this.discussion?.id() && this.stream) {
       app.store.find('discussions', this.discussion.id()).then(() => {

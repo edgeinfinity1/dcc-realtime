@@ -74,7 +74,7 @@ class Generator
 
             $postContents = (string) $postResponse->getBody();
             $decodedPostContents = json_decode($postContents, true);
-            $decodedContents['data']['extPost'] = $decodedPostContents;
+            $decodedContents['included'][] = $decodedPostContents['data'];
 
         }
 
