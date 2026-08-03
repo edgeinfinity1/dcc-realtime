@@ -4,11 +4,34 @@ import Discussion from 'flarum/forum/models/Discussion';
 import Post from 'flarum/forum/models/Post';
 import DiscussionList from 'flarum/forum/components/DiscussionList';
 import IndexPage from 'flarum/forum/components/IndexPage';
+import DiscussionListState from 'flarum/forum/states/DiscussionListState';
 import Button from 'flarum/common/components/Button';
 import WebsocketUpdates from './WebsocketUpdates';
 import extractText from 'flarum/common/utils/extractText';
 
 export default function () {
+  extend(DiscussionListState.prototype, 'getPages', function (pages) {
+    const seen = new Set();
+
+    pages.forEach((page) => {
+      const uniqueItems = page.items.filter((discussion) => {
+        const id = discussion.id();
+
+        if (id === undefined || id === null) return true;
+        if (seen.has(id)) return false;
+
+        seen.add(id);
+
+        return true;
+      });
+
+      // Realtime insertions can shift an API page boundary and return an item that is already loaded.
+      if (uniqueItems.length !== page.items.length) {
+        page.items.splice(0, page.items.length, ...uniqueItems);
+      }
+    });
+  });
+
   DiscussionList.prototype.websocketEventPosted = function (data) {
     // Retrieve current page params (eg for searching).
     const params = app.discussions.getParams();
