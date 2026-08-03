@@ -25,31 +25,28 @@ export default function () {
       if (!discussion && entity instanceof Post) {
         discussion = entity.discussion();
       }
-// console.log("pos1");
       // When we're on the Byobu private discussions page and this discussion is not private
       if (discussion && app.current.data.routeName === 'byobuPrivate' && !(discussion.recipientUsers() && discussion.recipientGroups())) {
         return;
       }
-// console.log("pos2");
-      if (discussion && app.current.data.routeName === 'byobuPrivate' && (discussion.recipientUsers()?.length === 0 && discussion.recipientGroups()?.length === 0)) {
-        return
+      if (
+        discussion &&
+        app.current.data.routeName === 'byobuPrivate' &&
+        discussion.recipientUsers()?.length === 0 &&
+        discussion.recipientGroups()?.length === 0
+      ) {
+        return;
       }
-// console.log("pos3");
       // When we're on the user profile private discussions page, we block updates.
       if (discussion && app.current.data.routeName === 'byobuUserPrivate') return;
-// console.log("pos4");
       // When we're on the user profile, we block updates.
       if (discussion && app.current.data.routeName === 'user.discussions') return;
-// console.log("pos5");
       // When we're viewing a specific tag but the discussion has no such tags, ignore it.
       if (discussion && activeTag && discussion.tags?.()) {
         // Tag is not assigned to this discussion.
-        const tagIds = discussion.tags().map(tag => tag.id());
-        // console.log(tagIds);
-        // console.log(activeTag.id());
+        const tagIds = discussion.tags().map((tag) => tag.id());
         if (tagIds.indexOf(activeTag.id()) === -1) return;
       }
-// console.log("pos6");
       if (
         discussion &&
         discussion.tags?.() &&
@@ -67,15 +64,12 @@ export default function () {
       ) {
         return;
       }
-// console.log("pos7");
       // Identify whether the discussion is ignored by the user with flarum/subscriptions.
       if (discussion && discussion.subscription?.() === 'ignore') return;
-// console.log("pos8");
       // We identify whether the user is following any of the tags of the discussion.
       const subscribedTag = discussion.tags()?.find((tag) => {
         return tag.subscription?.() === 'lurk' || tag.subscription?.() === 'follow';
       });
-// console.log("pos9");
       // For subscriptions (and follow-tags)
       if (app.current.get('routeName') === 'following') {
         // Whenever the discussion has no tags the user is subscribed to,
@@ -84,13 +78,10 @@ export default function () {
           return;
         }
       }
-// console.log("pos10");
       // Not already pushed recently or pending an update.
       if (this.websocketUpdates.has(discussion)) return;
-// console.log("pos11");
       // Discussion shouldn't already be top of DiscussionList.
       if (app.discussions.getPages()[0]?.items[0]?.id() === discussion.id()) return;
-// console.log("pos12");
       const pushOnIndex =
         discussion &&
         // Not a discussion view page.
